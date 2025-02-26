@@ -47,16 +47,14 @@ if uploaded_file:
     image = Image.open(uploaded_file)
 
 if image:
+    image = preprocess_image(image)
     st.image(image, caption="Processed Image", use_container_width=True)
     with st.spinner("Extracting text..."):
-        image = preprocess_image(image)
-        extracted_text = pytesseract.image_to_string(
-            image, config="--oem 1 --psm 6", nice=1
-        )
+        extracted_text = pytesseract.image_to_string(image, config="--psm 6")
 
     st.subheader("Extracted Text")
     if st.button(label="Copy Text"):
         pyperclip.copy(extracted_text)
         st.toast("Copied to clipboard!")
 
-    st.text_area(label="", value=extracted_text, height=250)
+    st.text_area(label="-", value=extracted_text, height=250)
