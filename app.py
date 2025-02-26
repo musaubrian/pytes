@@ -48,7 +48,6 @@ if uploaded_file:
 
 if image:
     image = preprocess_image(image)
-    st.image(image, caption="Processed Image", use_container_width=True)
     with st.spinner("Extracting text..."):
         extracted_text = pytesseract.image_to_string(image, config="--psm 6")
 
@@ -58,3 +57,5 @@ if image:
         st.toast("Copied to clipboard!")
 
     st.text_area(label="-", value=extracted_text, height=250)
+
+    st.image(image, caption="Processed Image", use_container_width=True)
