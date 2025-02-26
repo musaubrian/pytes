@@ -1,36 +1,28 @@
-# import streamlit as st
-# import pytesseract
-# from PIL import Image
-# import pyperclip
-#
-# st.title("Image Text Extractor")
-#
-# uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
-#
-# if uploaded_file:
-#     image = Image.open(uploaded_file)
-#     st.image(image, caption="Uploaded Image", use_container_width=True)
-#
-#     with st.spinner("Extracting text..."):
-#         extracted_text = pytesseract.image_to_string(image)
-#
-#     st.subheader("Extracted Text")
-#     if st.button(label="copy text"):
-#         pyperclip.copy(extracted_text)
-#         st.toast("Copied to clipboard!")
-#     st.text_area(label="", extracted_text, height=250)
-
 import streamlit as st
 import pytesseract
 from PIL import Image
 import pyperclip
 import subprocess
 import io
+import numpy as np
+import cv2
 
 st.title("Image Text Extractor")
 
 
-# Function to get image from clipboard via `wl-paste`
+def preprocess_image(image):
+    img = np.array(image)
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    _, thresh = cv2.threshold(
+        gray,
+        150,
+        255,
+        cv2.THRESH_BINARY + cv2.THRESH_OTSU,
+    )
+    return Image.fromarray(thresh)
+
+
+# get image from clipboard
 def get_clipboard_image():
     try:
         result = subprocess.run(
@@ -55,9 +47,12 @@ if uploaded_file:
     image = Image.open(uploaded_file)
 
 if image:
-    st.image(image, caption="Processed Image", use_column_width=True)
+    st.image(image, caption="Processed Image", use_container_width=True)
     with st.spinner("Extracting text..."):
-        extracted_text = pytesseract.image_to_string(image, config="--oem 1 --psm 6")
+        image = preprocess_image(image)
+        extracted_text = pytesseract.image_to_string(
+            image, config="--oem 1 --psm 6", nice=1
+        )
 
     st.subheader("Extracted Text")
     if st.button(label="Copy Text"):
